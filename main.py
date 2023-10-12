@@ -7,19 +7,18 @@ pg.init ()
 class DrawInformation:
     BLACK = 0, 0, 0
     WHITE = 255, 255,255
-    GREEN = 0, 255, 0
-    RED = 255,0, 0
+    GREEN = 145, 127, 179
+    RED = 42, 47, 79
     GREY = 128, 128, 128
-    BACKGROUND_COLOR = WHITE
+    BACKGROUND_COLOR = 231, 203, 203
 
     GRADIENTS = [
-        GREY,
-        (128, 128, 128),
-        (160, 160, 160),
-        (192, 192, 192)
+        (255, 187, 92),
+        (255, 155, 80),
+        (226, 94, 62)
     ]
     FONT = pg.font.SysFont('futura', 20)
-    LARGE_FONT = pg.font.SysFont('futura', 35)
+    LARGE_FONT = pg.font.SysFont('futura', 30)
 
     SIDE_PAD = 100
     TOP_PAD = 150
@@ -42,17 +41,25 @@ class DrawInformation:
         self.bar_height = math.floor((self.height - self.TOP_PAD) / (self.max_value - self.min_value))
         self.start_x = self.SIDE_PAD // 2
 
-def draw(draw_info):
+def draw(draw_info, alg_name, ascending):
     draw_info.window.fill(draw_info.BACKGROUND_COLOR)
     draw_list(draw_info)
 
+    title = draw_info.LARGE_FONT.render(
+        f"{alg_name}: {'Ascending' if ascending else 'Descending'}", 1, draw_info.RED)
+    draw_info.window.blit(title, (draw_info.width/ 2 - title.get_width() / 2, 5))
+
     controls = draw_info.FONT.render(
-        "Reset: Space Bar | Sort: Return | Ascending: a | Descending: d", 1, draw_info.BLACK)
-    draw_info.window.blit(controls, (draw_info.width/ 2 - controls.get_width() / 2, 5))
+        "Reset: Space Bar | Sort: Return | Ascending: a | Descending: d", 1, draw_info.RED)
+    draw_info.window.blit(controls, (draw_info.width/ 2 - controls.get_width() / 2, 45))
 
     sorting = draw_info.FONT.render(
-        "Insertion Sort: i | Bubble Sort: b", 1, draw_info.BLACK)
-    draw_info.window.blit(sorting, (draw_info.width/ 2 - sorting.get_width() / 2, 25))
+        "Bubble Sort: b | Insertion Sort: i | Selection Sort | s", 1, draw_info.RED)
+    draw_info.window.blit(sorting, (draw_info.width/ 2 - sorting.get_width() / 2, 70))
+
+    speed = draw_info.FONT.render(
+        "Speed: 1, 2, 3, 4", 1, draw_info.RED)
+    draw_info.window.blit(speed, (25, 45))
 
     draw_list(draw_info)
     pg.display.update()
@@ -103,16 +110,61 @@ def bubble_sort(draw_info, ascending=True):
                 yield True
     return lst
 
+def insertion_sort(draw_info, ascending=True):
+    lst = draw_info.lst
+
+    for i in range(1, len(lst)):
+        current = lst[i]
+
+        while True:
+            ascending_sort = i > 0 and lst[i - 1] > current and ascending
+            descending_sort = i > 0 and lst[i - 1] < current and  not ascending
+
+            if not ascending_sort and not descending_sort:
+                break
+
+            lst[i] = lst[i - 1]
+            i = i - 1
+            lst[i] = current
+
+            draw_list(draw_info, {i - 1: draw_info.GREEN, i: draw_info.RED}, True)
+            yield True
+
+    return lst
+
+def selection_sort(draw_info, ascending=True):
+    lst = draw_info.lst
+
+    for i in range(len(lst)):
+
+        # Find the minimum element in remaining
+        # unsorted array
+        min_idx = i
+
+        for j in range(i+1, len(lst)):
+            if lst[min_idx] > lst[j] and ascending or lst[min_idx] < lst[j] and not ascending:
+                min_idx = j
+
+        # Swap the found minimum element with
+        # the first element
+        lst[i], lst[min_idx] = lst[min_idx], lst[i]
+
+        draw_list(draw_info, {i: draw_info.GREEN, min_idx: draw_info.RED}, True)
+        yield True
+
+    return lst
+
 def main():
     run = True
     clock = pg.time.Clock()
+    speed = 30
 
     n = 50
     min_val = 0
     max_val = 100
 
     lst = generate_starting_list(n, min_val, max_val)
-    draw_info = DrawInformation(800, 600, lst)
+    draw_info = DrawInformation(1200, 600, lst)
     sorting = False
     ascending = True
 
@@ -121,7 +173,7 @@ def main():
     sorting_alg_generator = None
 
     while run:
-        clock.tick(60)
+        clock.tick(speed)
 
         if sorting:
             try:
@@ -129,7 +181,7 @@ def main():
             except StopIteration:
                 sorting = False
         else:
-            draw(draw_info)
+            draw(draw_info, sorting_alg_name, ascending)
 
         pg.display.update()
 
@@ -150,6 +202,26 @@ def main():
                 ascending = True
             elif event.key == pg.K_d and not sorting:
                 ascending = False
+
+            elif event.key == pg.K_i and not sorting:
+                sorting_alg = insertion_sort
+                sorting_alg_name = "Insertion Sort"
+            elif event.key == pg.K_b and not sorting:
+                sorting_alg = bubble_sort
+                sorting_alg_name = "Bubble Sort"
+            elif event.key == pg.K_s and not sorting:
+                sorting_alg = selection_sort
+                sorting_alg_name = "Selection Sort"
+
+            elif event.key == pg.K_1:
+                speed = 3
+            elif event.key == pg.K_2:
+                speed = 7
+            elif event.key == pg.K_3:
+                speed = 15
+            elif event.key == pg.K_4:
+                speed = 120
+
 
 
 
