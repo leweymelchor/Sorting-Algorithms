@@ -159,7 +159,7 @@ def main():
     clock = pg.time.Clock()
     speed = 30
 
-    n = 12
+    n = 50
     min_val = 0
     max_val = 100
 
@@ -214,7 +214,7 @@ def main():
                 sorting_alg_name = "Selection Sort"
 
             elif event.key == pg.K_1:
-                speed = 1
+                speed = 3.5
             elif event.key == pg.K_2:
                 speed = 7
             elif event.key == pg.K_3:
