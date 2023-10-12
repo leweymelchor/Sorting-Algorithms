@@ -82,6 +82,13 @@ def main():
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 run = False
+
+            if event.type != pg.KEYDOWN:
+                continue
+            if event.key == pg.K_SPACE:
+                lst = generate_starting_list(n, min_val, max_val)
+                draw_info.set_list(lst)
+
     pg.quit()
 
 
