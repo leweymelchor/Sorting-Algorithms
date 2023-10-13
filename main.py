@@ -23,6 +23,11 @@ class DrawInformation:
     SIDE_PAD = 100
     TOP_PAD = 150
 
+    TOP = pg.Color(99, 89, 133)
+    BOTTOM = pg.Color(145, 127, 179)
+    BAND_HEIGHT = 1
+
+
     def __init__(self, width, height, lst):
         self.width = width
         self.height = height
@@ -31,6 +36,7 @@ class DrawInformation:
         pg.display.set_caption('Sorting Visualizer')
 
         self.set_list(lst)
+
 
     def set_list(self, lst):
         self.lst = lst
@@ -41,8 +47,11 @@ class DrawInformation:
         self.bar_height = math.floor((self.height - self.TOP_PAD) / (self.max_value - self.min_value))
         self.start_x = self.SIDE_PAD // 2
 
+
 def draw(draw_info, alg_name, ascending):
+    draw_grad(draw_info)
     draw_info.window.fill(draw_info.BACKGROUND_COLOR)
+
     draw_list(draw_info)
 
     title = draw_info.LARGE_FONT.render(
@@ -65,6 +74,17 @@ def draw(draw_info, alg_name, ascending):
     pg.display.update()
 
 
+def draw_grad(draw_info):
+
+    for y in range(0, draw_info.height, draw_info.BAND_HEIGHT):
+        lerped_color = (
+        int(draw_info.TOP[0] + (draw_info.BOTTOM[0] - draw_info.TOP[0]) * y / (draw_info.height)),
+        int(draw_info.TOP[1] + (draw_info.BOTTOM[1] - draw_info.TOP[1]) * y / (draw_info.height)),
+        int(draw_info.TOP[2] + (draw_info.BOTTOM[2] - draw_info.TOP[2]) * y / (draw_info.height)))
+
+        pg.draw.rect(draw_info.window, lerped_color, (0, y, draw_info.width, draw_info.BAND_HEIGHT))
+
+
 def draw_list(draw_info, color_positions={}, clear_bg=False):
     lst = draw_info.lst
 
@@ -84,10 +104,11 @@ def draw_list(draw_info, color_positions={}, clear_bg=False):
         if i in color_positions:
             color = color_positions[i]
 
-        pg.draw.rect(draw_info.window, color, (x, y, draw_info.bar_width, draw_info.height ))
+        pg.draw.rect(draw_info.window, color, (x, y, draw_info.bar_width, draw_info.height), 0, 9, 9)
 
     if clear_bg:
         pg.display.update()
+
 
 def generate_starting_list(n, min_val, max_val):
     lst = []
@@ -95,6 +116,7 @@ def generate_starting_list(n, min_val, max_val):
         val = random.randint(min_val, max_val)
         lst.append(val)
     return lst
+
 
 def bubble_sort(draw_info, ascending=True):
     lst = draw_info.lst
@@ -109,6 +131,7 @@ def bubble_sort(draw_info, ascending=True):
                 draw_list(draw_info, {j: draw_info.GREEN, j + 1: draw_info.RED}, True)
                 yield True
     return lst
+
 
 def insertion_sort(draw_info, ascending=True):
     lst = draw_info.lst
@@ -132,6 +155,7 @@ def insertion_sort(draw_info, ascending=True):
 
     return lst
 
+
 def selection_sort(draw_info, ascending=True):
     lst = draw_info.lst
 
@@ -153,6 +177,7 @@ def selection_sort(draw_info, ascending=True):
         yield True
 
     return lst
+
 
 def main():
     run = True
