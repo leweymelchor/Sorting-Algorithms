@@ -7,9 +7,12 @@ pg.init ()
 class DrawInformation:
     BLACK = 0, 0, 0
     WHITE = 255, 255,255
-    GREEN = 145, 127, 179
-    RED = 42, 47, 79
     GREY = 128, 128, 128
+
+    DARK = 42, 47, 79
+    NEUTRAL = 162, 103, 138
+    LIGHT = 145, 127, 179
+
     BACKGROUND_COLOR = 231, 203, 203
 
     GRADIENTS = [
@@ -55,19 +58,19 @@ def draw(draw_info, alg_name, ascending):
     draw_list(draw_info)
 
     title = draw_info.LARGE_FONT.render(
-        f"{alg_name}: {'Ascending' if ascending else 'Descending'}", 1, draw_info.RED)
+        f"{alg_name}: {'Ascending' if ascending else 'Descending'}", 1, draw_info.DARK)
     draw_info.window.blit(title, (draw_info.width/ 2 - title.get_width() / 2, 5))
 
     controls = draw_info.FONT.render(
-        "Reset: Space Bar | Sort: Return | Ascending: a | Descending: d", 1, draw_info.RED)
+        "Reset: Space Bar | Sort: Return | Ascending: a | Descending: d", 1, draw_info.DARK)
     draw_info.window.blit(controls, (draw_info.width/ 2 - controls.get_width() / 2, 45))
 
     sorting = draw_info.FONT.render(
-        "Bubble Sort: b | Insertion Sort: i | Selection Sort | s", 1, draw_info.RED)
+        "Bubble Sort: b | Insertion Sort: i | Selection Sort | s", 1, draw_info.DARK)
     draw_info.window.blit(sorting, (draw_info.width/ 2 - sorting.get_width() / 2, 70))
 
     speed = draw_info.FONT.render(
-        "Speed: 1, 2, 3, 4", 1, draw_info.RED)
+        "Speed: 1, 2, 3, 4", 1, draw_info.DARK)
     draw_info.window.blit(speed, (25, 45))
 
     draw_list(draw_info)
@@ -92,7 +95,7 @@ def draw_list(draw_info, color_positions={}, clear_bg=False):
         clear_rect = (draw_info.SIDE_PAD // 2, draw_info.TOP_PAD,
                        draw_info.width - draw_info.SIDE_PAD,
                          draw_info.height - draw_info.TOP_PAD)
-        pg.draw.rect(draw_info.window, draw_info.BACKGROUND_COLOR, clear_rect)
+        pg.draw.rect(draw_info.window, draw_info.BACKGROUND_COLOR, clear_rect) # GRADIENT ISSUE
 
 
     for i, val in enumerate(lst):
@@ -128,7 +131,7 @@ def bubble_sort(draw_info, ascending=True):
 
             if (num1 > num2 and ascending) or (num1 < num2 and not ascending):
                 lst[j], lst[j + 1] = lst[j + 1], lst[j]
-                draw_list(draw_info, {j: draw_info.GREEN, j + 1: draw_info.RED}, True)
+                draw_list(draw_info, {j: draw_info.LIGHT, j + 1: draw_info.DARK}, True)
                 yield True
     return lst
 
@@ -150,7 +153,7 @@ def insertion_sort(draw_info, ascending=True):
             i = i - 1
             lst[i] = current
 
-            draw_list(draw_info, {i - 1: draw_info.GREEN, i: draw_info.RED}, True)
+            draw_list(draw_info, {i - 1: draw_info.LIGHT, i: draw_info.DARK}, True)
             yield True
 
     return lst
@@ -161,22 +164,47 @@ def selection_sort(draw_info, ascending=True):
 
     for i in range(len(lst)):
 
-        # Find the minimum element in remaining
-        # unsorted array
         min_idx = i
 
         for j in range(i+1, len(lst)):
             if lst[min_idx] > lst[j] and ascending or lst[min_idx] < lst[j] and not ascending:
                 min_idx = j
 
-        # Swap the found minimum element with
-        # the first element
         lst[i], lst[min_idx] = lst[min_idx], lst[i]
 
-        draw_list(draw_info, {i: draw_info.GREEN, min_idx: draw_info.RED}, True)
+        draw_list(draw_info, {i: draw_info.LIGHT, min_idx: draw_info.DARK}, True)
         yield True
 
     return lst
+
+def quick_sort(draw_info, ascending=True):
+    def quicksort(self, lst: list, low: int, high: int) -> None:
+        if low < high:
+            pivot = self.partition(lst, low, high)
+            self._quicksort(lst, low, pivot)
+            self._quicksort(lst, pivot + 1, high)
+
+    def partition(self, lst: list, low: int, high: int, draw_info) -> int:
+        pivot = lst[(high + low) // 2]
+        i = low
+        j = high
+
+        while True:
+            while lst[i] < pivot:
+                i += 1
+            while lst[j] > pivot:
+                j -= 1
+            if i >= j:
+                return j
+            lst[i], lst[j] = lst[j], lst[i]
+
+            draw_list(draw_info, {i: draw_info.LIGHT, j: draw_info.DARK}, True)
+            yield True
+
+
+    def sort(self, lst: list) -> list:
+        self.quicksort(lst, 0, len(lst) - 1)
+        return lst
 
 
 def main():
@@ -237,6 +265,9 @@ def main():
             elif event.key == pg.K_s and not sorting:
                 sorting_alg = selection_sort
                 sorting_alg_name = "Selection Sort"
+            elif event.key == pg.K_q and not sorting:
+                sorting_alg = quick_sort
+                sorting_alg_name = "Quick Sort"
 
             elif event.key == pg.K_1:
                 speed = 3.5
